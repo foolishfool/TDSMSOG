@@ -9,7 +9,9 @@ import numpy as np
 from sklearn.metrics import silhouette_score
 import scipy.stats as stats
 import pandas as pd
+from sklearn.model_selection import KFold
 import collections
+from datetime import datetime
 import researchpy as rp
 class Experiment():
         def __init__(self):
@@ -86,12 +88,17 @@ class Experiment():
             optimize_W.run()
             return optimize_W
             
-        def TDSM2(self,dataread_original, data_train,data_test, initial_neuron_num,dim_num):
+        def TDSM2(self, data_train,data_test, initial_neuron_num,dim_num,train_label, test_label, print1=False):
+           # print(f"print1  {print1}")
+        
             m, n = self.topology_som(initial_neuron_num)
-            som = newSom.SOM(m= m, n= n, dim=dim_num)  
-            optimize_W = TDSM_SOM.TDSM_SOM(som,data_train,data_test,dataread_original.label_train,dataread_original.label_test)
+            som = newSom.SOM(m= m, n= n, dim=dim_num)      
+            optimize_W = TDSM_SOM.TDSM_SOM(som,data_train,data_test,train_label,test_label,print1)
             optimize_W.run()
+            
             return optimize_W
+        
+        
             
           #  return optimize_W.g_granule
             return optimize_W.combinedweight

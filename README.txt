@@ -15,10 +15,23 @@
    - Launch Jupyter Notebook on your local system.
    - Navigate to the `NotebookFiles` folder and open the relevant `.ipynb` file for the dataset you want to work with.
 
-3. **Update File Paths**
-   - Ensure the following paths in the `.ipynb` file are updated to match your local folder structure:
-     - **Dataset Path**: Update the path to the respective dataset stored in the `DataSets` folder.
-     - **Code Path**: Update the path to the required code files located in the `Codes` folder.
+3. **Install Necessary Packages**
+   - Install the necessary packages:
+
+     pip install category_encoders
+     pip install tensorflow
+     pip install researchpy
+     pip install ucimlrepo
+
+
+   - If the following error occurs when downloading UCI dataset:
+
+     SSLError: [X509: NO_CERTIFICATE_OR_CRL_FOUND] no certificate or crl found (_ssl.c:4353)
+
+     run the following command to fix it:
+
+     pip install --upgrade --force-reinstall certify
+
 
 4. **Verify Adjustments**
    - Double-check that all file paths in the notebook are correctly mapped to your local setup.
@@ -29,4 +42,5 @@
 6. **Repeat for Other Experiments**
    - For experiments related to other datasets, repeat the above steps with the corresponding `.ipynb` file.
 
----
+
+This version corrects grammatical errors, improves clarity, and ensures consistency in formatting.

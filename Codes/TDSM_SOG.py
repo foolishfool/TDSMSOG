@@ -41,11 +41,11 @@ class TDSMSOG():
      soms_discrete is the soms for each discrete features
 
     """
-    def __init__(self, som,
-                 data_train, 
-                 data_test,
-                 label_train,                       
-                 label_test,
+    def __init__(self, initial_neuron_num,
+                 dataset,
+                 all_label,
+                 data_train_index, 
+                 data_test_index,
                  ):
         """
         Parameters
@@ -60,19 +60,20 @@ class TDSMSOG():
      
         """
 
-        self.som = som  
+        self.initial_neuron_num = initial_neuron_num  
         #print(f"som weigth shape {som.weights.shape}")
         # initial cluster numbers in TDSM_SOM, which is the neuron number in som
-        self.predicted_classNum = int(som.m*som.n)
-
-        self.data_train = data_train
-        self.data_test = data_test
+       #self.predicted_classNum = int(som.m*som.n)
+        self.data_train = dataset.all_data[data_train_index[0]]
+        self.data_test = dataset.all_data[data_test_index[0]]
+       # print(f"data_train_index 1111 {data_train_index}")
+        #self.data_train_normalized = dataset.all_data_normalized[data_train_index]
+       # self.data_test_normalized = dataset.all_data_normalized[data_test_index]
        # print(f" self.data_test { self.data_test}")
 
-        self.train_label = label_train
-        self.train_label = self.train_label.astype(int)
-        self.test_label = label_test
-        self.test_label = self.test_label.astype(int)
+        self.train_label = all_label[data_train_index[0]].astype(int)
+        self.test_label = all_label[data_test_index[0]].astype(int)
+       
 
 
     def shannon_entropy(self,A, mode="auto", verbose=False):
@@ -711,6 +712,7 @@ class TDSMSOG():
             # i is the comlumn number
             self.all_feature_groups[i] = self.getFeatureGroups(self.data_train[:,i])
             #print(f" i {i} self.all_feature_gropus {  self.all_feature_groups[i] } ")
+        #print(f"self.all_feature_groups {self.all_feature_groups}")
 
 
     def transferdataToprobabilityrepresentation(self, x, neuron_num):
@@ -1197,7 +1199,7 @@ class TDSMSOG():
         if self.test_discrete_score_W_discrete_a < self.test_discrete_score_W0_a:
             print("Not good ari result for discrete features  !!!!!")
      
-    def do_SOGVSTDSMSOG(self, g_granule):
+    def do_SOGVSTDSMSOG(self,predicted_clusters_indexes_sog):
         """
         do hyper data
         
@@ -1205,21 +1207,22 @@ class TDSMSOG():
 
         self.getAllfeatureGroups()  #group each column by feature value get    self.all_feature_groups
        
-        self.som.fit(self.data_train)   
-        weight_original = self.som.weights0
+       # self.som.fit(self.data_train)   
+     #   weight_original = self.som.weights0
        # print(f"weight_original {weight_original}")
-        self.train_W0_predicted_label = self.som.predict(self.data_train,weight_original)   
-        predicted_clusters_indexes_sog, current_clustered_datas = self.get_indices_and_data_in_predicted_clusters(self.som.weights0.shape[0], self.train_W0_predicted_label,self.data_train)      
+      #  self.train_W0_predicted_label = self.som.predict(self.data_train,weight_original)   
+     #   predicted_clusters_indexes_sog, current_clustered_datas = self.get_indices_and_data_in_predicted_clusters(self.som.weights0.shape[0], self.train_W0_predicted_label,self.data_train)      
         #Get SOG Mapping
-        #print(f"predicted_clusters_indexes_sog {(predicted_clusters_indexes_sog)}")
+       # print(f"predicted_clusters_indexes_sog {(predicted_clusters_indexes_sog)}")
         self.getEachNeuronProbabilityOfEachFeatureValue_fuzzy(predicted_clusters_indexes_sog)
        
         
         #SOG
         
         self.train_data_embedding_sog = self.getEmbeddingWithNeuronProbablity(self.data_train)
-        #scaler = StandardScaler().fit(self.train_data_embedding_sog)
-        #self.train_data_embedding_sog = scaler.transform(self.train_data_embedding_sog)
+      #  scaler = StandardScaler().fit(self.train_data_embedding_sog)
+       # self.train_data_embedding_sog = scaler.transform(self.train_data_embedding_sog)
+        #print(f"data_train{(self.data_train)}")
        # print(f"train_data_embedding_sog{(self.train_data_embedding_sog)}")
         
 
@@ -1235,8 +1238,8 @@ class TDSMSOG():
         #self.getScore("all_train_score_W0",self.train_label_all,transferred_predicted_label_train_W0)
 
         self.test_new_embedding_sog = self.getEmbeddingWithNeuronProbablity(self.data_test)
-        #scaler = StandardScaler().fit(self.test_new_embedding_sog)
-        #self.test_new_embedding_sog = scaler.transform(self.test_new_embedding_sog)
+       # scaler = StandardScaler().fit(self.test_new_embedding_sog)
+      #  self.test_new_embedding_sog = scaler.transform(self.test_new_embedding_sog)
         return
         
         
@@ -1267,11 +1270,11 @@ class TDSMSOG():
         
         #TDSMSOG
 
-        self.getEachNeuronProbabilityOfEachFeatureValue_fuzzy(g_granule)
+       # self.getEachNeuronProbabilityOfEachFeatureValue_fuzzy(g_granule)
         
         
         
-        self.train_data_embedding_tdsmsog = self.getEmbeddingWithNeuronProbablity(self.data_train)
+       # self.train_data_embedding_tdsmsog = self.getEmbeddingWithNeuronProbablity(self.data_train)
         #print(f"self.train_data_embedding_tdsmsog {self.train_data_embedding_tdsmsog}")
         #scaler = StandardScaler().fit(self.train_data_embedding_tdsmsog)
         #self.train_data_embedding_tdsmsog = scaler.transform(self.train_data_embedding_tdsmsog)
@@ -1280,7 +1283,7 @@ class TDSMSOG():
        # m, n = self.topology_som(len(g_granule)) #tdsmsog alwasy use the tdsm splitted number neurons
 
         #print(f"weight_tdsmsog {weight_tdsmsog}")
-        print(f"***************************  TDSMSOG ************************")
+      #  print(f"***************************  TDSMSOG ************************")
        # self.train_W_baseline_predicted_label = newsom.predict(self.train_data_embedding_tdsmsog,weight_tdsmsog)    
       #  predicted_clusters_indexes, current_clustered_datas = self.get_indices_and_data_in_predicted_clusters(newsom.weights0.shape[0], self.train_W_baseline_predicted_label,self.train_data_embedding_tdsmsog)   
 
@@ -1292,7 +1295,7 @@ class TDSMSOG():
         #self.granule = experiment.TDSM(dataread,initial_neuron_num, dim_num ).g_granule
        # combine_weights_tdsm = experiment.TDSM2(dataread,initial_neuron_num, dim_num )
 
-        self.test_new_embedding_tdsmsog = self.getEmbeddingWithNeuronProbablity(self.data_test)
+      #  self.test_new_embedding_tdsmsog = self.getEmbeddingWithNeuronProbablity(self.data_test)
         #scaler = StandardScaler().fit(self.test_new_embedding_tdsmsog)
         #self.test_new_embedding_tdsmsog = scaler.transform(self.test_new_embedding_tdsmsog)
         return

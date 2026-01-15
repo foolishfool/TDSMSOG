@@ -8,7 +8,6 @@ from asyncio.windows_events import NULL
 #from curses.ascii import NULL
 from importlib import resources
 from pickle import TRUE
-from telnetlib import PRAGMA_HEARTBEAT
 from sklearn import metrics
 from scipy import spatial
 import numpy as np
@@ -22,7 +21,7 @@ class TDSM_SOM():
     """
     The 2-D, rectangular grid self-organizing map class using Numpy.
     """
-    def __init__(self, som, data_train, data_test,label_train,label_test):
+    def __init__(self, som, data_train, data_test,label_train,label_test,print1= False):
         """
         Parameters
         ----------
@@ -51,6 +50,7 @@ class TDSM_SOM():
         self.label_train = label_train
         self.test_label = label_test
         self.combinedweight = som.weights0
+        self.print1 = print1
 
 
     def _initialdatasetsize(self):
@@ -136,6 +136,9 @@ class TDSM_SOM():
      
         if(scorename == "test_score_W0" ):
             self.test_score_W0_n = normalized_mutual_info_score(y_true,y_pred)
+          #  print(f"y_true  + {y_true}"  ) 
+          #  print(f"y_pred  + {y_pred}"  ) 
+          #  print(f"NMI  + {self.test_score_W0_n}"  ) 
         if(scorename == "test_score_W_combined" ):
             self.test_score_W_combined_n = normalized_mutual_info_score(y_true,y_pred)
 
@@ -182,7 +185,9 @@ class TDSM_SOM():
                 # ************ this idx is not the indice in train_data   it is the indice in predicted_label such as  idx:y-> 0:1, 1:2,3:1, 4:1      
                 # the indices of  predicted_label is the same with related category label set:  label_trains,label_trains_right_data or label_trains_error_data
                 # idx start from 0,1,2,3....  y is the predicted class value
-                for idx, y in enumerate(predicted_label):     
+              #  print(f"self.label_train {self.label_train}")
+                for idx, y in enumerate(predicted_label):  
+                   # print(f"idx {idx}y {y}")   
                     # is the cluster label
                     if(y == i):
                         if(category == 0):
@@ -196,7 +201,7 @@ class TDSM_SOM():
                             newlist.append(self.error_data_labels[split_number][idx])
                         if(category == 3):
                             newlist.append(self.test_label[idx])        
-               
+               # print(f"newlist {newlist}")
                 clusters_labels.append(newlist) 
                 if(category == 1):
                     clusters_data.append(newdatalist)
@@ -234,11 +239,14 @@ class TDSM_SOM():
          it means that predicted cluster 0 is 1 in class lable, cluster label 2 is 3 in class label
         """
         predicted_label_convert_to_class_label = []
+      #  print(f"predicted_class_label_in_each_cluster {predicted_class_label_in_each_cluster}")
         for item in predicted_class_label_in_each_cluster:
             if item != []:
                 # the first item is for cluster0       
-                # transfer to true class value based on indices in predict lables          
+                # transfer to true class value based on indices in predict lables      
+                #print(f"item {item}")    
                 predicted_label_convert_to_class_label.append(self.getMaxRepeatedElements(item))
+              
             else:
                 predicted_label_convert_to_class_label.append(-1)
         
@@ -282,8 +290,8 @@ class TDSM_SOM():
 
         """      
         if(mapping_cluster_class_values == True):
-           
-            predicted_clusters= self.get_indices_in_clusters(self.predicted_classNum,category,predicted_cluster_labels,split_number)         
+            predicted_clusters= self.get_indices_in_clusters(self.predicted_classNum,category,predicted_cluster_labels,split_number)   
+            #print(f"predicted_clusters {predicted_clusters} ")      
             self.getLabelMapping( predicted_clusters,Wtype)  
             
             if(Wtype == 0):
@@ -368,6 +376,7 @@ class TDSM_SOM():
         x_stack = np.stack([x]*(self.som.m*self.som.n), axis=0)
         distance = np.linalg.norm((x_stack - Weights[w_index]).astype(float), axis=1)
         predicted_cluster_index = self.som.m*self.som.n* w_index +  np.argmin(distance)
+      #  print(f"predicted_cluster_index {predicted_cluster_index}")
         return  predicted_cluster_index
 
     # get predicted cluster label in all W (the neruons in W that has no data represented will be ignored)
@@ -471,9 +480,10 @@ class TDSM_SOM():
         newlist = list(A)
         #print("newlist0 {}".format(newlist))
         newlist.append(B)
-        #print("newlist1 {}".format(newlist))
+       # print("newlist1 {}".format(newlist))
         #*** is A is self.variable then must return A and change A in code outside the function 
-        A = np.array(newlist)
+      #  print(f"newlist {newlist}")
+        A = np.array(newlist, dtype=object)
        # print("A len {}".format(len(A)))
         return A
 
@@ -493,6 +503,8 @@ class TDSM_SOM():
         # get train and test dataset 
         self._initialdatasetsize()
         #train som to get W0
+       # if(self.print1):
+       #     print(f"self som {self.som.m*self.som.n}")
         self.som.fit(self.data_train)
         self.weights.append(self.som.weights0)
         
@@ -513,13 +525,13 @@ class TDSM_SOM():
         current_label_train = self.label_train
         current_transferred_predicted_label = transferred_predicted_label_all_train
 
-        self.g_granule = []
-
+        self.n_granule =[]
         while(hasNoErorData != True):
             self.error_lists,self.correct_lists = self.getErrorDataIndicesFromPredictedLabels(current_label_train,current_transferred_predicted_label)
             #**** when self.error_lists==0 means come to the last rounas as generate self.error_rates[n] first and then n+1 so when comes to self.error_lists==0 , no need to add , otherwise will have  self.error_rates[n+1] with split_num = n
             #print(f"  self.correct_lists  { self.correct_lists}   error_lists {self.error_lists}")
-            self.g_granule.append(self.correct_lists)
+            self.n_granule.append(self.correct_lists)
+            
             if(self.error_lists!=[]):
                 self.error_rates.append(len(self.error_lists)/len(self.data_train)) 
             
@@ -543,9 +555,11 @@ class TDSM_SOM():
                     #TDSM
                     self.test_W_combined_predicted_label = self.predict_among_multipleW(self.data_test,self.split_num,self.right_datas,self.weights)   
                     transferred_predicted_label_test = self.transferClusterLabelToClassLabel(3,self.test_W_combined_predicted_label,Wtype = 2,split_number=self.split_num)   
+                   
+                   
                     self.getScore("test_score_W0",self.test_label,transferred_predicted_label_test)
-                    
-                    #print(f"  self.g_granule  { self.g_granule}  ")
+                    #predicted_clusters_indexes_sog, current_clustered_datas = self.get_indices_and_data_in_predicted_clusters(self.som.weights0.shape[0], self.train_W0_predicted_label,self.data_train)   
+                    #print(f"  .g_granuleself  { self.n_granule}  ")
                     break
                
             #if(current_split_number == max_split_number):
@@ -558,7 +572,7 @@ class TDSM_SOM():
            
             #*********** make it sotred, so when nptake error data it will be also from small indices to big indices, then can compared with label_error_data
             reduced_indices_sorted = np.sort(self.error_lists)
-          
+           # print(f" reduced_indices_sorted {reduced_indices_sorted}")
             self.get_subset(reduced_indices_sorted,current_data_train,0,current_split_number)  #get train_right_datas
             self.get_subset(reduced_indices_sorted,current_label_train,1,current_split_number)  #get label_train_right_datas
            
@@ -670,7 +684,6 @@ class TDSM_SOM():
             current_label_train = self.error_data_labels[current_split_number]
 
             current_split_number = current_split_number +1
-            
             
             
 

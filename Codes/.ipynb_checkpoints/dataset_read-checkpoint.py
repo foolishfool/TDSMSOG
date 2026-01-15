@@ -23,27 +23,12 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelEncoder
 from category_encoders.binary import BinaryEncoder
 from sklearn.preprocessing import MultiLabelBinarizer
-
 class DATAREAD():
     def __init__(self):
          return
-        
-    def topology_som(self, som_num):
-            start = int(np.sqrt(som_num))
-            factor = som_num / start
-            while not self.is_integer(factor):
-                start += 1
-                factor = som_num / start
-            return int(factor), start
-        
-    def is_integer(self,number):
-            if int(number) == number:
-                return True
-            else:
-                return False
-            
+
     
-    def initializedataset1(self,Z,X,Y,attributute,unique_num=20 ):
+    def initializedataset(self,Z,X,Y,attributute,unique_num=20 ):
          #X is training data  Y is test data all_data is X+Y
          self.X = X
          self.data_test =  Y
@@ -211,7 +196,7 @@ class DATAREAD():
             else: 
                 print("Unkonwn value {}".format(X.at[i,name]))
                 
-    def initializedataset2(self,X,Y,attributute):
+    def initializedataset1(self,X,Y,attributute):
          self.X = X.sample(n =X.shape[0])
          self.data_test =  Y
          
@@ -230,25 +215,6 @@ class DATAREAD():
          self.label_test = label_test.to_numpy(dtype=np.float64)
 
          scaler = StandardScaler().fit(self.data_train)
-         self.data_train_normalized = scaler.transform(self.data_train)
+         self.data_train = scaler.transform(self.data_train)
          scaler2 = StandardScaler().fit(self.data_test)
-         self.data_test_normalized = scaler2.transform(self.data_test)
-
-
-    def initializedataset(self,X,attributute):
-         self.all_label  = X[attributute].to_numpy(dtype=np.float64)    
-         self.all_data = X.drop(attributute,axis = 1).to_numpy(dtype=np.float64)
-        # scaler = StandardScaler().fit(self.all_data)
-         #self.all_data_normalized = scaler.transform(self.all_data)
-         #print(f"self.all_label {self.all_label}")
-        # print(f" self.all_data_normalized shape { self.all_data_normalized.shape}")
-
-    def readucidata(self,X,y,attributute):
-        # print(f"y {y}")
-         self.all_label  =y[attributute].to_numpy(dtype=np.float64)    
-         self.all_data = X.to_numpy(dtype=np.float64)
-        # scaler = StandardScaler().fit(self.all_data)
-         #self.all_data_normalized = scaler.transform(self.all_data)
-        # print(f"self.all_label {self.all_label}")
-     
-            
+         self.data_test = scaler2.transform(self.data_test)
